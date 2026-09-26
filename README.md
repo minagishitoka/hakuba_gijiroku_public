@@ -1,0 +1,2 @@
+# hakuba_gijiroku_public
+白馬村議会議事録をホームページに公開するものです。
