@@ -1,0 +1,927 @@
+<title>白馬村議会 議事録検索</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f3f5f6; --surface:#ffffff; --sunk:#e9edef; --ink:#1a242d; --muted:#586975; --line:#d3dbe0;
+  --accent:#275c7a; --accent-ink:#ffffff; --accent-soft:#dce8ef;
+  --mark:#ffe07a; --mark-ink:#1a242d; --ron:#b9d6c4; --warn:#8a5a00; --warn-soft:#fbf0d9;
+  --h1:#cde2fb; --h1i:#1a242d; --h2:#9ec5f4; --h2i:#1a242d; --h3:#5598e7; --h3i:#0d1216; --h4:#1c5cab; --h4i:#ffffff; --h5:#0d366b; --h5i:#ffffff;
+  --sans:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --serif:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171c; --surface:#182129; --sunk:#0d1216; --ink:#e2e9ee; --muted:#93a4b0; --line:#2b3944;
+    --accent:#7db2d2; --accent-ink:#0d1216; --accent-soft:#1f3544;
+    --mark:#6e5c14; --mark-ink:#fff6d6; --ron:#29503a; --warn:#e8b95a; --warn-soft:#33290f;
+    --h1:#16345a; --h1i:#e2e9ee; --h2:#1c5cab; --h2i:#ffffff; --h3:#3987e5; --h3i:#0d1216; --h4:#86b6ef; --h4i:#0d1216; --h5:#cde2fb; --h5i:#0d1216;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171c; --surface:#182129; --sunk:#0d1216; --ink:#e2e9ee; --muted:#93a4b0; --line:#2b3944;
+  --accent:#7db2d2; --accent-ink:#0d1216; --accent-soft:#1f3544;
+  --mark:#6e5c14; --mark-ink:#fff6d6; --ron:#29503a; --warn:#e8b95a; --warn-soft:#33290f;
+    --h1:#16345a; --h1i:#e2e9ee; --h2:#1c5cab; --h2i:#ffffff; --h3:#3987e5; --h3i:#0d1216; --h4:#86b6ef; --h4i:#0d1216; --h5:#cde2fb; --h5i:#0d1216;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px}
+.mono{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.titlebar{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding-block:12px 6px}
+.titlebar h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.02em}
+.titlebar .ver{color:var(--muted);font-size:12px}
+.window{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;padding:6px 10px;margin-bottom:8px;background:var(--sunk);border-radius:4px;color:var(--muted)}
+.window b{color:var(--ink);font-weight:500}
+.window .lab{font-weight:700;color:var(--accent);letter-spacing:.06em}
+
+.controls{display:grid;gap:10px;padding-block:14px 6px}
+.searchrow{display:flex;gap:8px}
+.searchrow input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);font-size:16px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:8px 16px;cursor:pointer;font-weight:500}
+.btn.ghost{background:transparent;color:var(--accent)}
+.hint{font-size:12px;color:var(--muted)}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.filters label{display:grid;gap:2px;font-size:12px;color:var(--muted)}
+.filters select{padding:7px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface);min-width:0;width:100%}
+.filters select:disabled{opacity:.5}
+@media (max-width:720px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-top:6px}
+.tab{background:none;border:none;border-bottom:3px solid transparent;padding:8px 14px;cursor:pointer;color:var(--muted);font-weight:500}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.statusline{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 12px;padding-block:10px}
+.count{font-size:15px}
+.count strong{font-size:20px;font-variant-numeric:tabular-nums}
+.scope{font-size:12px;color:var(--muted)}
+.sortsel{padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.loading{font-size:12px;color:var(--warn);background:var(--warn-soft);padding:4px 8px;border-radius:4px}
+
+.results{display:grid;gap:10px;padding-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:6px;cursor:pointer;text-align:left;width:100%}
+.card:hover{border-color:var(--accent)}
+.card .head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.chip{display:inline-block;font-size:12px;padding:0 7px;border-radius:3px;background:var(--accent-soft);color:var(--ink);white-space:nowrap}
+.chip.code{font-weight:500}
+.chip.jev{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.meta{font-size:12.5px;color:var(--muted)}
+.src{font-family:var(--serif);font-size:15px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
+.card .src{max-height:none}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 1px;border-radius:2px}
+.ron{background:linear-gradient(transparent 55%,var(--ron) 55%)}
+.trace{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:12px;color:var(--muted);border-top:1px dotted var(--line);padding-top:6px}
+.trace .k{color:var(--muted)}
+.trace .v{color:var(--ink)}
+.empty{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+.more{justify-self:center}
+
+/* 詳細パネル */
+.panel{position:fixed;inset:0;z-index:20;display:flex;justify-content:flex-end;background:rgba(10,16,20,.35)}
+.panel .sheet{background:var(--bg);width:min(760px,100%);height:100%;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 18px calc(env(safe-area-inset-bottom,0px) + 24px);border-left:1px solid var(--line)}
+.sheet .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;position:sticky;top:-12px;background:var(--bg);padding-block:8px;z-index:1}
+.sheet h2{font-size:17px;margin:4px 0 8px;text-wrap:balance}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;font-size:13px;margin:0 0 12px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.link{background:none;border:none;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font:inherit}
+.sec{margin-top:18px}
+.sec h3{font-size:13px;letter-spacing:.06em;color:var(--muted);margin:0 0 6px;font-weight:700}
+.note{font-size:12px;color:var(--warn);background:var(--warn-soft);padding:6px 10px;border-radius:4px;margin:6px 0}
+.sp{border-left:3px solid var(--line);padding:6px 0 6px 12px;margin-bottom:10px}
+.sp.q{border-left-color:var(--accent)}
+.sp .who{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:2px 10px}
+.jevt{width:100%;border-collapse:collapse;font-size:12.5px}
+.jevt th,.jevt td{border-bottom:1px solid var(--line);text-align:left;padding:5px 6px;vertical-align:top}
+.jevt th{color:var(--muted);font-weight:500;white-space:nowrap}
+.tablewrap{overflow-x:auto}
+.idlist{display:flex;flex-wrap:wrap;gap:4px 10px}
+details.help{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+details.help summary{cursor:pointer;color:var(--accent)}
+details.help ul{margin:6px 0;padding-left:18px}
+/* 画面の切り替え */
+.views{display:flex;gap:6px;flex-wrap:wrap;padding-block:12px 0}
+.vbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:500;color:var(--muted)}
+.vbtn[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* 分野×年度の地図 */
+.maphead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:baseline;padding-block:14px 8px}
+.maphead h2{font-size:16px;margin:0}
+.check{font-size:13px;padding:4px 10px;border-radius:4px;background:var(--accent-soft)}
+.check.bad{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.heatwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table.heat{border-collapse:separate;border-spacing:2px;font-size:12px;font-variant-numeric:tabular-nums;margin:6px}
+table.heat th{font-weight:500;color:var(--muted);white-space:nowrap;padding:2px 4px}
+table.heat thead th{text-align:center;line-height:1.25;vertical-align:bottom}
+table.heat tbody th{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1}
+table.heat td{width:38px;min-width:34px;height:28px;text-align:center;border-radius:3px;padding:0}
+table.heat td button{all:unset;display:block;width:100%;height:100%;line-height:28px;cursor:pointer;border-radius:3px;text-align:center}
+table.heat td button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+table.heat td.sel{box-shadow:0 0 0 2px var(--ink)}
+table.heat td.z{background:var(--sunk);color:var(--muted)}
+.h1{background:var(--h1);color:var(--h1i)} .h2{background:var(--h2);color:var(--h2i)} .h3{background:var(--h3);color:var(--h3i)}
+.h4{background:var(--h4);color:var(--h4i)} .h5{background:var(--h5);color:var(--h5i)}
+table.heat td.tot,table.heat th.tot{color:var(--ink);font-weight:500;background:transparent}
+table.heat tfoot th,table.heat tfoot td{border-top:1px solid var(--line)}
+.part{color:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12px;color:var(--muted);padding-block:8px}
+.legend .sw{display:inline-block;width:18px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+.tip{position:fixed;z-index:30;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:5px 8px;border-radius:4px;max-width:260px}
+.celllist{padding-block:14px 24px;display:grid;gap:10px}
+.celllist h3{font-size:14px;margin:0}
+
+/* きょうの注目の質疑 */
+.pick{padding-block:16px 30px;display:grid;gap:14px;max-width:820px}
+.pick .lead{font-size:12px;color:var(--muted)}
+.pickcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 22px;display:grid;gap:12px}
+.pickcard .big{font-family:var(--serif);font-size:clamp(18px,2.4vw,23px);line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:600;text-wrap:pretty}
+.pickcard .src{font-size:15px}
+.pickactions{display:flex;flex-wrap:wrap;gap:8px}
+
+footer{font-size:12px;color:var(--muted);padding-block:16px 30px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .12s}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="titlebar">
+      <h1>白馬村議会 議事録検索</h1>
+      <span class="ver">研究用 v0.1（検索＋原文／分野×年度の地図／きょうの注目の質疑）</span>
+    </div>
+    <div class="window" id="window">
+      <span class="lab">観測窓</span>
+      <span><b>本会議（定例会・臨時会）の会議録　2010年1月〜2026年3月</b>（110資料。本文を検索できるのは108資料）</span>
+      <span>欠落：<b>平成23年第3回定例会</b></span>
+      <span>画像のみで本文なし：平成22年第1回・第3回臨時会</span>
+      <span>委員会・議会だよりは含まない</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="views" aria-label="画面">
+    <button class="vbtn" type="button" data-view="search" aria-current="page">検索＋原文</button>
+    <button class="vbtn" type="button" data-view="map">分野×年度の地図</button>
+    <button class="vbtn" type="button" data-view="pick">きょうの注目の質疑</button>
+  </nav>
+  <div id="view-search">
+  <section class="controls" aria-label="検索と絞り込み">
+    <form class="searchrow" id="qform" role="search">
+      <input id="q" type="search" placeholder="例：空き家 固定資産税（スペース区切りはAND）" autocomplete="off" aria-label="検索語">
+      <button class="btn" type="submit">検索</button>
+    </form>
+    <div class="hint">複数の語はすべて含むもの（AND）。全角・半角と英字の大小は区別しない。検索語なしでも、絞り込みだけで一覧できる。</div>
+    <div class="filters">
+      <label>年度（4月〜翌3月）<select id="fNendo"></select></label>
+      <label>分類（主分類）<select id="fCode"></select></label>
+      <label><span id="memberLabel">議員（質問者）</span><select id="fMember"></select></label>
+      <label>JEVラベル（一次判定）<select id="fJev"></select></label>
+    </div>
+    <details class="help">
+      <summary>絞り込みの効き方と注意</summary>
+      <ul>
+        <li><b>論点</b>タブ：分類＝論点の主分類。議員＝質問者。JEV＝その論点本文が載っている発言に付いたラベル。</li>
+        <li><b>ブロック</b>タブ（一般質問者ブロック）：検索語はブロック内の全発言と件名から探す。分類＝ブロック内にその主分類の論点がある。JEV＝ブロック内の発言にそのラベルがある。</li>
+        <li><b>発言</b>タブ：議員＝発言者名（村長・課長等も選べる）。分類は論点に付くものなので、発言タブでは使えない。JEV＝その発言に付いたラベル。</li>
+        <li>JEVラベルは「は」のAIによる一次判定。重要度・確度ではない。件数の単位は「発言」。HUMAN_REVIEW は全件 True のため絞り込みには使わない。</li>
+        <li>発言の年度は会議日から。会議日が「未特定」の発言は会期開始日から数える。</li>
+        <li>論点・ブロック・発言は単位が違うので、件数はタブごとに別々に出す。</li>
+      </ul>
+    </details>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="検索の単位">
+    <button class="tab" role="tab" id="tab-ronten" data-tab="ronten" aria-selected="true">論点</button>
+    <button class="tab" role="tab" id="tab-block" data-tab="block" aria-selected="false">ブロック</button>
+    <button class="tab" role="tab" id="tab-speech" data-tab="speech" aria-selected="false">発言</button>
+  </div>
+  <div class="statusline">
+    <div>
+      <div class="count" id="count">読み込み中…</div>
+      <div class="scope" id="scope"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="loading" id="loading" hidden></span>
+      <label class="hint">並び <select id="sort" class="sortsel"><option value="asc">古い順</option><option value="desc">新しい順</option></select></label>
+    </div>
+  </div>
+  <section class="results" id="results" aria-live="polite"></section>
+  </div>
+
+  <div id="view-map" hidden>
+    <div class="maphead">
+      <h2>分野×年度の地図（1マス＝論点数）</h2>
+      <span class="check" id="mapCheck"></span>
+    </div>
+    <div class="hint">横＝年度（4月〜翌3月、論点の日付から）、縦＝主分類01〜19。マスを押すと、その論点の一覧が下に出る。90議事運営・99判定不能は地図に入れず、下の注記に件数だけ示す。</div>
+    <div class="legend" id="mapLegend"></div>
+    <div class="heatwrap"><table class="heat" id="heat"></table></div>
+    <div class="hint" id="mapNote" style="padding-top:8px"></div>
+    <section class="celllist" id="cellList" aria-live="polite"></section>
+  </div>
+
+  <div id="view-pick" hidden>
+    <section class="pick">
+      <div class="lead">全1,190論点（01〜19・90・99）から等確率で1件を選ぶ（完全ランダム）。選ばれたことは重要度と関係しない。</div>
+      <div id="pickBody"></div>
+      <div class="pickactions">
+        <button class="btn" id="pickAgain" type="button">もう1件</button>
+      </div>
+    </section>
+  </div>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<footer class="wrap">
+  データ：発言DB・一般質問者ブロック一覧（「に」2026-09-26）／論点データ 分類 v2.3.1（「り」2026-09-26）／JEVラベル jev-1.13.0（「は」2026-09-26）。データは受け取ったまま表示し、値は直していない。<br>
+  原PDFは白馬村の会議録ページから、表示の「原資料ファイル名」と「原PDFページ」で開く：<a href="https://www.vill.hakuba.lg.jp/gyosei/gyoseijoho/hakubamuragikai/1871.html" target="_blank" rel="noopener">白馬村議会 会議録</a>
+</footer>
+
+<div class="panel" id="panel" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+    <div class="bar">
+      <button class="btn ghost" id="pBack" type="button">← 戻る</button>
+      <button class="btn ghost" id="pClose" type="button">閉じる</button>
+    </div>
+    <div id="pBody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s ?? "").normalize("NFKC").toLowerCase();
+const WINDOW_TEXT = "この観測窓（2010年1月〜2026年3月の本会議・臨時会の会議録。平成23年第3回定例会は欠落）";
+
+const S = {
+  meta:null, tab:"ronten", terms:[], shown:30, list:[],
+  speeches:[], spById:new Map(), spByBlock:new Map(), blockNorm:new Map(),
+  loadedYears:0, totalYears:0, allLoaded:false,
+  nav:[],
+};
+const UNIT = {ronten:"論点", block:"ブロック", speech:"発言"};
+const JEV_FIELDS = ["ブロック種別_JEV","問題構築関係_JEV","答弁の焦点のずれ_JEV","テーマ","テーマ重複フラグ"];
+
+async function loadJson(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(url + " を読めませんでした（" + r.status + "）");
+  let buf = new Uint8Array(await r.arrayBuffer());
+  if(url.endsWith(".b64.txt")){
+    const bin = atob(new TextDecoder().decode(buf).trim());
+    buf = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  }
+  let text;
+  if(buf[0] === 0x1f && buf[1] === 0x8b){
+    const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"));
+    text = await new Response(stream).text();
+  } else {
+    text = new TextDecoder().decode(buf);
+  }
+  return JSON.parse(text);
+}
+
+function nendoOf(date){
+  const m = /^(\d{4})-(\d{2})/.exec(date || "");
+  if(!m) return null;
+  const y = +m[1], mo = +m[2];
+  return mo >= 4 ? y : y - 1;
+}
+function nendoLabel(n){
+  const w = n >= 2019 ? (n === 2019 ? "令和元" : "令和" + (n - 2018)) : "平成" + (n - 1988);
+  return n + "年度（" + w + "年度）" + (n === 2009 ? "　一部（2010年1〜3月のみ）" : "");
+}
+
+/* ---------- 初期化 ---------- */
+async function init(){
+  try{
+    S.meta = await loadJson("data/meta.json.gz.b64.txt");
+  }catch(e){
+    $("#count").textContent = "データを読み込めませんでした：" + e.message;
+    return;
+  }
+  const M = S.meta;
+  M.blockById = new Map(M.blocks.map(b => [b.id, b]));
+  M.rontenByBlock = new Map();
+  for(const r of M.ronten){
+    r.norm = norm(r.本文);
+    if(!M.rontenByBlock.has(r.block)) M.rontenByBlock.set(r.block, []);
+    M.rontenByBlock.get(r.block).push(r);
+  }
+  M.questioners = [...new Set(M.blocks.map(b => b.質問者))].sort((a,b) => a.localeCompare(b, "ja"));
+  M.jevDictByLabel = new Map(M.jevDict.map(d => [d["ラベル名"], d]));
+  fillStaticFilters();
+  bind();
+  run();
+  const h = location.hash.replace("#", "");
+  setView(["map","pick"].includes(h) ? h : "search");
+  loadSpeeches();
+}
+
+function fillStaticFilters(){
+  const M = S.meta;
+  const nendos = [];
+  for(let n = 2009; n <= 2025; n++) nendos.push(n);
+  $("#fNendo").innerHTML = '<option value="">すべての年度</option>' + nendos.map(n => `<option value="${n}">${esc(nendoLabel(n))}</option>`).join("");
+  let codeOpts = '<option value="">すべての分類</option><optgroup label="政策分野（01〜19）">';
+  for(const [c, name] of Object.entries(M.codes)){
+    if(c === "90") codeOpts += '</optgroup><optgroup label="その他">';
+    codeOpts += `<option value="${c}">${c} ${esc(name)}</option>`;
+  }
+  codeOpts += "</optgroup>";
+  $("#fCode").innerHTML = codeOpts;
+  const vals = {};
+  for(const f of JEV_FIELDS) vals[f] = new Set();
+  for(const j of Object.values(M.jev)) for(const f of JEV_FIELDS) vals[f].add(String(j[f]));
+  let jo = '<option value="">指定しない</option><option value="*">JEVラベルの付いたもの（どれでも）</option>';
+  for(const f of JEV_FIELDS){
+    jo += `<optgroup label="${esc(f)}">` + [...vals[f]].sort().map(v => `<option value="${esc(f + "|" + v)}">${esc(f.replace("_JEV","") + "：" + v)}</option>`).join("") + "</optgroup>";
+  }
+  $("#fJev").innerHTML = jo;
+  fillMember();
+}
+
+function fillMember(){
+  const sel = $("#fMember"), prev = sel.value;
+  if(S.tab === "speech"){
+    $("#memberLabel").textContent = "発言者名";
+    const groups = new Map();
+    for(const s of S.speeches){
+      if(!groups.has(s.kubun)) groups.set(s.kubun, new Set());
+      groups.get(s.kubun).add(s.name);
+    }
+    const order = ["議員","議長","村長","副村長","教育長","課長等","その他"];
+    const keys = [...groups.keys()].sort((a,b) => (order.indexOf(a) + 99) % 99 - (order.indexOf(b) + 99) % 99);
+    let h = '<option value="">すべての発言者</option>';
+    for(const k of keys){
+      h += `<optgroup label="${esc(k)}">` + [...groups.get(k)].sort((a,b) => a.localeCompare(b, "ja")).map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("") + "</optgroup>";
+    }
+    sel.innerHTML = h;
+  } else {
+    $("#memberLabel").textContent = "議員（質問者）";
+    sel.innerHTML = '<option value="">すべての質問者</option>' + S.meta.questioners.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  }
+  if([...sel.options].some(o => o.value === prev)) sel.value = prev;
+  $("#fCode").disabled = S.tab === "speech";
+}
+
+async function loadSpeeches(){
+  const years = S.meta.years;
+  S.totalYears = years.length;
+  const parts = new Array(years.length);
+  showLoading();
+  let next = 0;
+  async function worker(){
+    while(next < years.length){
+      const i = next++;
+      parts[i] = await loadJson(`data/sp_${years[i]}.json.gz.b64.txt`);
+      S.loadedYears++;
+      showLoading();
+    }
+  }
+  try{
+    await Promise.all([worker(), worker(), worker(), worker()]);
+  }catch(e){
+    $("#loading").hidden = false;
+    $("#loading").textContent = "発言データを読み込めませんでした：" + e.message;
+    return;
+  }
+  const shiryo = S.meta.shiryo;
+  for(const part of parts){
+    for(const r of part.rows){
+      const id = r[0], sid = id.slice(0, 7);
+      const date = /^\d{4}-/.test(r[1]) ? r[1] : null;
+      const sh = shiryo[sid] || {};
+      const s = {
+        id, sid, date:r[1], day:r[2], role:r[3], name:r[4], kubun:r[5], agenda:part.agenda[r[6]],
+        text:r[7], p:r[8], pe:r[9], cand:r[10], parent:r[11], gq:r[12],
+        kaiki:sh.会期名, shubetsu:sh.会議種別, start:sh.会期開始日, file:sh.原資料ファイル名,
+        sortDate:date || sh.会期開始日, nendo:nendoOf(date || sh.会期開始日),
+        idx:S.speeches.length,
+      };
+      s.norm = norm(s.text);
+      S.speeches.push(s);
+      S.spById.set(id, s);
+      if(s.parent){
+        if(!S.spByBlock.has(s.parent)) S.spByBlock.set(s.parent, []);
+        S.spByBlock.get(s.parent).push(s);
+      }
+    }
+  }
+  for(const b of S.meta.blocks){
+    const sps = S.spByBlock.get(b.id) || [];
+    S.blockNorm.set(b.id, norm(b.件名 + "\n" + b.件名補足) + "\n" + sps.map(s => s.norm).join("\n"));
+  }
+  S.allLoaded = true;
+  showLoading();
+  fillMember();
+  run();
+  renderPick();
+  if(mapSel && !$("#view-map").hidden) showCellQuiet();
+}
+function showCellQuiet(){
+  const y = window.scrollY; showCell(mapSel[0], mapSel[1]); window.scrollTo(0, y);
+}
+
+function showLoading(){
+  const el = $("#loading");
+  if(S.allLoaded){ el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = `発言データ読み込み中 ${S.loadedYears}/${S.totalYears}ファイル（ブロック・発言タブはこのあと使える）`;
+}
+
+/* ---------- 検索 ---------- */
+function readTerms(){
+  const raw = $("#q").value.split(/[\s　]+/).map(norm).filter(Boolean);
+  return [...new Set(raw)];
+}
+const hasAll = (n, terms) => terms.every(t => n.includes(t));
+
+function jevMatch(id, jf){
+  const j = S.meta.jev[id];
+  if(!j) return false;
+  if(jf === "*") return true;
+  const [f, v] = jf.split("|");
+  return String(j[f]) === v;
+}
+
+function run(){
+  if(!S.meta) return;
+  S.terms = readTerms();
+  S.shown = 30;
+  const nendo = $("#fNendo").value, code = $("#fCode").value, member = $("#fMember").value, jf = $("#fJev").value;
+  const terms = S.terms;
+  let list = [];
+  if(S.tab === "ronten"){
+    list = S.meta.ronten.filter(r =>
+      (!nendo || r.年度 === +nendo) && (!code || r.code === code) && (!member || r.質問者 === member) &&
+      (!jf || jevMatch(r.所在, jf)) && hasAll(r.norm, terms));
+    list.sort((a,b) => (a.日付 + a.id).localeCompare(b.日付 + b.id));
+  } else if(S.tab === "block"){
+    if(S.allLoaded){
+      list = S.meta.blocks.filter(b =>
+        (!nendo || nendoOf(b.日付) === +nendo) && (!member || b.質問者 === member) &&
+        (!code || (S.meta.rontenByBlock.get(b.id) || []).some(r => r.code === code)) &&
+        (!jf || (S.spByBlock.get(b.id) || []).some(s => jevMatch(s.id, jf))) &&
+        hasAll(S.blockNorm.get(b.id) || "", terms));
+      list.sort((a,b) => (a.日付 + a.id).localeCompare(b.日付 + b.id));
+    }
+  } else {
+    if(S.allLoaded){
+      list = S.speeches.filter(s =>
+        (!nendo || s.nendo === +nendo) && (!member || s.name === member) &&
+        (!jf || jevMatch(s.id, jf)) && hasAll(s.norm, terms));
+      list.sort((a,b) => a.sortDate < b.sortDate ? -1 : a.sortDate > b.sortDate ? 1 : a.idx - b.idx);
+    }
+  }
+  if($("#sort").value === "desc") list.reverse();
+  S.list = list;
+  render();
+}
+
+function scopeText(){
+  const parts = [];
+  if(S.terms.length) parts.push("検索語：" + S.terms.join(" AND "));
+  const nd = $("#fNendo"), cd = $("#fCode"), mb = $("#fMember"), jv = $("#fJev");
+  if(nd.value) parts.push(nd.selectedOptions[0].textContent);
+  if(cd.value && S.tab !== "speech") parts.push("分類 " + cd.selectedOptions[0].textContent);
+  if(mb.value) parts.push((S.tab === "speech" ? "発言者 " : "質問者 ") + mb.value);
+  if(jv.value) parts.push("JEV " + jv.selectedOptions[0].textContent);
+  return parts.length ? parts.join("／") : "条件なし（観測窓内のすべて）";
+}
+
+function render(){
+  const unit = UNIT[S.tab];
+  const box = $("#results");
+  if(S.tab !== "ronten" && !S.allLoaded){
+    $("#count").innerHTML = `該当 <strong>—</strong> ${unit}`;
+    $("#scope").textContent = "発言データの読み込みが終わると表示される";
+    box.innerHTML = '<div class="empty muted">発言データを読み込んでいます。論点タブはすぐ使えます。</div>';
+    return;
+  }
+  $("#count").innerHTML = `該当 <strong>${S.list.length.toLocaleString()}</strong> ${unit}`;
+  $("#scope").textContent = scopeText();
+  if(!S.list.length){
+    box.innerHTML = `<div class="empty"><p style="margin:0 0 6px"><b>${esc(WINDOW_TEXT)}・この検索語と絞り込みでは、該当する${unit}は見つかりませんでした。</b></p>
+      <p class="muted" style="margin:0">観測窓の外（委員会、議会だより、欠落した会期、画像のみの臨時会）は検索していない。表記ゆれ（例：漢字とかな、旧字）や別の単位のタブも試せる。</p></div>`;
+    return;
+  }
+  const items = S.list.slice(0, S.shown);
+  const html = items.map((it, i) => S.tab === "ronten" ? cardRonten(it, i) : S.tab === "block" ? cardBlock(it, i) : cardSpeech(it, i)).join("");
+  const rest = S.list.length - S.shown;
+  box.innerHTML = html + (rest > 0 ? `<button class="btn ghost more" id="more" type="button">さらに表示（残り ${rest.toLocaleString()}${unit}）</button>` : "");
+  const more = $("#more");
+  if(more) more.onclick = () => { S.shown += 30; render(); };
+}
+
+/* ---------- 強調 ---------- */
+function mapNorm(t){
+  let n = "", map = [];
+  for(let i = 0; i < t.length;){
+    const cp = t.codePointAt(i), ch = String.fromCodePoint(cp);
+    const nn = norm(ch);
+    for(let k = 0; k < nn.length; k++) map.push(i);
+    n += nn;
+    i += ch.length;
+  }
+  map.push(t.length);
+  return {n, map};
+}
+function termRanges(text, terms){
+  if(!terms.length) return [];
+  const {n, map} = mapNorm(text);
+  const rs = [];
+  for(const t of terms){
+    let from = 0, p;
+    while((p = n.indexOf(t, from)) !== -1){
+      const a = map[p], lastSrc = map[p + t.length - 1];
+      const b = lastSrc + String.fromCodePoint(text.codePointAt(lastSrc)).length;
+      rs.push([a, b]);
+      from = p + t.length;
+    }
+  }
+  rs.sort((x, y) => x[0] - y[0]);
+  const out = [];
+  for(const r of rs){
+    if(out.length && r[0] <= out[out.length - 1][1]) out[out.length - 1][1] = Math.max(out[out.length - 1][1], r[1]);
+    else out.push(r.slice());
+  }
+  return out;
+}
+function hl(text, terms){
+  const rs = termRanges(text, terms);
+  let h = "", pos = 0;
+  for(const [a, b] of rs){
+    h += esc(text.slice(pos, a)) + "<mark>" + esc(text.slice(a, b)) + "</mark>";
+    pos = b;
+  }
+  return h + esc(text.slice(pos));
+}
+function snippet(text, terms, len = 220){
+  const rs = termRanges(text, terms);
+  if(!rs.length || text.length <= len) return (text.length > len ? hl(text.slice(0, len), terms) + "…" : hl(text, terms));
+  const start = Math.max(0, rs[0][0] - 70);
+  const end = Math.min(text.length, start + len);
+  return (start > 0 ? "…" : "") + hl(text.slice(start, end), terms) + (end < text.length ? "…" : "");
+}
+/* 論点本文が発言のどこにあるか（空白を無視して探す） */
+function locateRange(text, needle){
+  const idx = [], chars = [];
+  for(let i = 0; i < text.length; i++){ if(!/\s/.test(text[i])){ idx.push(i); chars.push(text[i]); } }
+  const hay = chars.join(""), nd = needle.replace(/\s+/g, "");
+  let p = hay.indexOf(nd), L = nd.length;
+  if(p === -1){ L = Math.min(40, nd.length); p = hay.indexOf(nd.slice(0, L)); }
+  if(p === -1 || !L) return null;
+  return [idx[p], idx[p + L - 1] + 1];
+}
+
+/* ---------- 共通表示 ---------- */
+const codeChip = c => `<span class="chip code">${esc(c)} ${esc(S.meta.codes[c] || "")}</span>`;
+const pages = (p, pe) => p == null || p === "" ? "—" : (pe && String(pe) !== String(p) ? `p.${p}–${pe}` : `p.${p}`);
+function trace(pairs){
+  return `<div class="trace">` + pairs.filter(Boolean).map(([k, v]) => `<span><span class="k">${esc(k)}</span> <span class="v mono">${esc(v)}</span></span>`).join("") + `</div>`;
+}
+function blockTitle(b){
+  if(b.件名) return {t:b.件名, src:b.件名の出典};
+  if(b.件名補足) return {t:b.件名補足, src:"議会だより補足：" + b.件名補足の出典};
+  return {t:"", src:"件名なし（" + b.件名の補完状況 + "）"};
+}
+function jevChips(id){
+  const j = S.meta.jev[id];
+  if(!j) return "";
+  return `<span class="chip jev" title="JEVによる一次判定。重要度・確度ではない">JEV一次：${esc(j["ブロック種別_JEV"])}・${esc(j["問題構築関係_JEV"])}・焦点のずれ ${esc(j["答弁の焦点のずれ_JEV"])}</span>`;
+}
+
+function cardRonten(r, i){
+  const s = S.spById.get(r.所在);
+  const b = S.meta.blockById.get(r.block);
+  return `<button class="card" type="button" data-kind="ronten" data-id="${esc(r.id)}">
+    <div class="head"><span class="mono">${esc(r.id)}</span>${codeChip(r.code)}<span class="meta">${esc(r.年度)}年度</span></div>
+    <div class="meta">${esc(r.会期)}・${esc(r.日付)}・質問者 ${esc(r.質問者)}</div>
+    <div class="src">${hl(r.本文, S.terms)}</div>
+    ${trace([["block_id", r.block], ["発言ID", r.所在 || "—"], ["原PDF", (b ? b.file : "") + " " + (s ? pages(s.p, s.pe) : "（発言データ読み込み後）")]])}
+  </button>`;
+}
+function cardBlock(b){
+  const bt = blockTitle(b);
+  const sps = S.spByBlock.get(b.id) || [];
+  let hits = [];
+  if(S.terms.length){
+    hits = sps.filter(s => S.terms.some(t => s.norm.includes(t))).slice(0, 3);
+  }
+  const hitHtml = hits.map(s => `<div><div class="meta">${esc(s.name)}（${esc(s.role)}）・<span class="mono">${esc(s.id)}</span>・${esc(pages(s.p, s.pe))}</div><div class="src">${snippet(s.text, S.terms, 160)}</div></div>`).join("");
+  const nHit = S.terms.length ? sps.filter(s => S.terms.some(t => s.norm.includes(t))).length : 0;
+  return `<button class="card" type="button" data-kind="block" data-id="${esc(b.id)}">
+    <div class="head"><span class="mono">${esc(b.id)}</span><span class="meta">${esc(b.会期)}・${esc(b.日付)}・質問者 ${esc(b.質問者)}</span></div>
+    <div><b>${esc(bt.t) || '<span class="muted">（件名なし）</span>'}</b> <span class="meta">［${esc(bt.src)}］</span></div>
+    ${hitHtml}
+    ${S.terms.length ? `<div class="meta">このブロックで検索語を含む発言：${nHit}発言${nHit > 3 ? "（最初の3発言を表示）" : ""}</div>` : ""}
+    ${trace([["block_id", b.id], ["範囲", b.開始 + " 〜 " + b.終了], ["原PDF", b.file + " " + pages(b.p, b.pEnd)]])}
+  </button>`;
+}
+function cardSpeech(s){
+  return `<button class="card" type="button" data-kind="speech" data-id="${esc(s.id)}">
+    <div class="head"><span class="mono">${esc(s.id)}</span><span class="meta">${esc(s.kaiki)}・${esc(s.date)}（${esc(s.day)}日目）</span>${jevChips(s.id)}</div>
+    <div class="meta">${esc(s.name)}（${esc(s.role)}／${esc(s.kubun)}）${s.agenda ? "・" + esc(s.agenda) : ""}</div>
+    <div class="src">${snippet(s.text, S.terms)}</div>
+    ${trace([["発言ID", s.id], ["親ブロックID", s.parent || "（一般質問者ブロック外）"], ["原PDF", s.file + " " + pages(s.p, s.pe)]])}
+  </button>`;
+}
+
+/* ---------- 詳細パネル ---------- */
+function openDetail(kind, id, push = true){
+  if(push) S.nav.push([kind, id]);
+  const body = $("#pBody");
+  body.innerHTML = kind === "ronten" ? detailRonten(id) : kind === "block" ? detailBlock(id) : detailSpeech(id);
+  $("#panel").hidden = false;
+  $("#pBack").hidden = S.nav.length < 2;
+  document.body.style.overflow = "hidden";
+  $(".panel .sheet").scrollTop = 0;
+  const target = body.querySelector("[data-focus]") || body.querySelector(".sec mark");
+  if(target) target.scrollIntoView({block:"center"});
+}
+function closeDetail(){
+  $("#panel").hidden = true;
+  S.nav = [];
+  document.body.style.overflow = "";
+}
+const lnk = (kind, id, label) => `<button class="link mono" type="button" data-kind="${kind}" data-id="${esc(id)}">${esc(label || id)}</button>`;
+
+function speechBlockHtml(s, extra = ""){
+  return `<div class="sp ${s.kubun === "議員" ? "q" : ""}" ${extra}>
+    <div class="who"><b>${esc(s.name)}</b><span>${esc(s.role)}／${esc(s.kubun)}</span><span>候補 ${esc(s.cand || "—")}</span>${lnk("speech", s.id)}<span>${esc(pages(s.p, s.pe))}</span>${jevChips(s.id)}</div>
+    <div class="src">${hl(s.text, S.terms)}</div>
+  </div>`;
+}
+
+function detailRonten(id){
+  const M = S.meta, r = M.ronten.find(x => x.id === id);
+  const b = M.blockById.get(r.block), s = S.spById.get(r.所在);
+  let locHtml = '<p class="muted">発言データを読み込み中。読み込み後に開き直すと原文が出る。</p>';
+  if(s){
+    const rg = locateRange(s.text, r.本文);
+    const t = s.text;
+    locHtml = rg
+      ? `<div class="src">${hl(t.slice(0, rg[0]), S.terms)}<span class="ron" data-focus>${hl(t.slice(rg[0], rg[1]), S.terms)}</span>${hl(t.slice(rg[1]), S.terms)}</div>`
+      : `<div class="src">${hl(t, S.terms)}</div>`;
+  }
+  const r99 = r.r99 ? r.r99 + " " + (M.reason99[r.r99] || "") : "";
+  return `<div class="mono muted">論点</div><h2 id="pTitle">${esc(r.id)}</h2>
+    <dl class="kv">
+      <dt>主分類</dt><dd>${codeChip(r.code)}</dd>
+      <dt>副分類</dt><dd>${r.sub.length ? r.sub.map(codeChip).join(" ") : "—"}</dd>
+      ${r99 ? `<dt>99理由</dt><dd>${esc(r99)}</dd>` : ""}
+      <dt>論点タグ</dt><dd>${esc(r.tag) || '<span class="muted">空欄（データに列の値がない）</span>'}</dd>
+      <dt>会期・日付</dt><dd>${esc(r.会期)}・${esc(r.日付)}（${esc(r.年度)}年度）</dd>
+      <dt>質問者</dt><dd>${esc(r.質問者)}</dd>
+      <dt>block_id</dt><dd>${lnk("block", r.block)}</dd>
+      <dt>論点本文のある発言</dt><dd>${r.所在 ? lnk("speech", r.所在) : "—"}</dd>
+      <dt>原PDF</dt><dd class="mono">${esc(b ? b.file : "")} ${s ? esc(pages(s.p, s.pe)) : ""}</dd>
+    </dl>
+    <div class="sec"><h3>論点本文</h3><div class="src">${hl(r.本文, S.terms)}</div></div>
+    <div class="sec"><h3>原文（論点本文の箇所に下線）</h3>${locHtml}</div>
+    <div class="sec"><h3>対応する発言ID（${r.発言.length}発言）</h3><div class="idlist">${r.発言.map(x => lnk("speech", x)).join("")}</div></div>`;
+}
+
+function detailBlock(id){
+  const M = S.meta, b = M.blockById.get(id), bt = blockTitle(b);
+  const rons = M.rontenByBlock.get(id) || [];
+  const sps = S.spByBlock.get(id) || [];
+  let first = true;
+  const spHtml = sps.map(s => {
+    const f = first && S.terms.length && S.terms.some(t => s.norm.includes(t));
+    if(f) first = false;
+    return speechBlockHtml(s, f ? "data-focus" : "");
+  }).join("");
+  return `<div class="mono muted">一般質問者ブロック</div><h2 id="pTitle">${esc(b.id)}　${esc(b.質問者)}</h2>
+    <dl class="kv">
+      <dt>件名</dt><dd>${esc(bt.t) || "—"}<br><span class="muted">［${esc(bt.src)}］${b.件名 && b.件名補足 ? "／議会だより補足：" + esc(b.件名補足) : ""}</span></dd>
+      <dt>件名の補完状況</dt><dd>${esc(b.件名の補完状況)}</dd>
+      <dt>会期・日付</dt><dd>${esc(b.会期)}・${esc(b.日付)}（${esc(b.日目)}日目・会期内${esc(b.順)}番目）</dd>
+      <dt>質問者</dt><dd>${esc(b.質問者)}（${esc(b.議席)}）</dd>
+      <dt>範囲</dt><dd>${lnk("speech", b.開始)} 〜 ${lnk("speech", b.終了)}</dd>
+      <dt>原PDF</dt><dd class="mono">${esc(b.file)} ${esc(pages(b.p, b.pEnd))}</dd>
+      ${b.備考 ? `<dt>備考</dt><dd>${esc(b.備考)}</dd>` : ""}
+    </dl>
+    <div class="sec"><h3>このブロックの論点（${rons.length}論点）</h3>
+      ${rons.map(r => `<div style="margin-bottom:6px">${lnk("ronten", r.id)} ${codeChip(r.code)} <span class="src" style="font-size:14px">${hl(r.本文.length > 90 ? r.本文.slice(0, 90) + "…" : r.本文, S.terms)}</span></div>`).join("") || '<p class="muted">なし</p>'}
+    </div>
+    <div class="sec"><h3>原文（${sps.length}発言）</h3>${S.allLoaded ? spHtml : '<p class="muted">発言データを読み込み中。</p>'}</div>`;
+}
+
+function detailSpeech(id){
+  const M = S.meta, s = S.spById.get(id);
+  if(!s) return `<h2 id="pTitle">${esc(id)}</h2><p class="muted">発言データを読み込み中。読み込み後に開き直す。</p>`;
+  const prev = S.speeches[s.idx - 1], next = S.speeches[s.idx + 1];
+  const j = M.jev[id];
+  let jevHtml = "";
+  if(j){
+    const rows = [["ブロック種別候補（に）", j["ブロック種別候補"], null]];
+    for(const f of ["ブロック種別_JEV","問題構築関係_JEV","答弁の焦点のずれ_JEV"]) rows.push([f, j[f], M.jevDictByLabel.get(String(j[f]))]);
+    rows.push(["HUMAN_REVIEW", String(j.HUMAN_REVIEW), M.jevDictByLabel.get("HUMAN_REVIEW=" + (j.HUMAN_REVIEW ? "True" : "False"))]);
+    rows.push(["テーマ", j["テーマ"] + (j["テーマ所属数"] > 1 ? "（所属：" + j["テーマ所属"] + "）" : ""), null]);
+    rows.push(["テーマ重複フラグ", j["テーマ重複フラグ"], M.jevDictByLabel.get("テーマ重複フラグ=" + j["テーマ重複フラグ"])]);
+    jevHtml = `<div class="sec"><h3>JEVラベル（一次判定）</h3>
+      <div class="note">JEVによる一次判定。重要度・確度・最終確定コードではない。原文と前後の発言で確認する。</div>
+      <div class="tablewrap"><table class="jevt"><thead><tr><th>項目</th><th>値</th><th>意味／付け方の注意（ラベル辞書）</th></tr></thead><tbody>
+      ${rows.map(([k, v, d]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td><td>${d ? esc(d["意味"]) + '<br><span class="muted">' + esc(d["付け方の注意"]) + "</span>" : ""}</td></tr>`).join("")}
+      </tbody></table></div></div>`;
+  }
+  const same = x => x && x.sid === s.sid;
+  return `<div class="mono muted">発言</div><h2 id="pTitle">${esc(s.id)}　${esc(s.name)}</h2>
+    <dl class="kv">
+      <dt>発言者</dt><dd>${esc(s.name)}（${esc(s.role)}／${esc(s.kubun)}）</dd>
+      <dt>会期</dt><dd>${esc(s.kaiki)}（${esc(s.shubetsu)}・資料ID ${esc(s.sid)}）</dd>
+      <dt>会議日</dt><dd>${esc(s.date)}（${esc(s.day)}日目）${s.date === "未特定" ? '<span class="muted">　会期開始日 ' + esc(s.start) + "</span>" : ""}</dd>
+      <dt>議事日程</dt><dd>${esc(s.agenda) || "—"}</dd>
+      <dt>ブロック種別候補</dt><dd>${esc(s.cand) || "—"}</dd>
+      <dt>親ブロックID</dt><dd>${s.parent ? lnk("block", s.parent) : '<span class="muted">なし（一般質問者ブロック外）</span>'}</dd>
+      <dt>原PDF</dt><dd class="mono">${esc(s.file)} ${esc(pages(s.p, s.pe))}</dd>
+    </dl>
+    <div class="sec"><h3>原文</h3><div class="src">${hl(s.text, S.terms)}</div></div>
+    <div class="sec" style="display:flex;gap:10px;flex-wrap:wrap">
+      ${same(prev) ? `<button class="btn ghost" type="button" data-kind="speech" data-id="${esc(prev.id)}">← 前の発言 ${esc(prev.name)}</button>` : ""}
+      ${same(next) ? `<button class="btn ghost" type="button" data-kind="speech" data-id="${esc(next.id)}">次の発言 ${esc(next.name)} →</button>` : ""}
+    </div>
+    ${jevHtml}`;
+}
+
+/* ---------- 分野×年度の地図 ---------- */
+const NENDOS = Array.from({length:17}, (_, i) => 2009 + i);
+const POLICY = Array.from({length:19}, (_, i) => String(i + 1).padStart(2, "0"));
+const EXPECT_POLICY = 1104;
+const BINS = [[1,1,"h1"],[2,3,"h2"],[4,6,"h3"],[7,10,"h4"],[11,Infinity,"h5"]];
+const binOf = n => (BINS.find(b => n >= b[0] && n <= b[1]) || [0,0,"z"])[2];
+let mapSel = null;
+
+function mapCounts(){
+  const cell = new Map(), row = new Map(), col = new Map();
+  let total = 0, other = {"90":0, "99":0}, outside = 0;
+  for(const r of S.meta.ronten){
+    if(r.code === "90" || r.code === "99"){ other[r.code]++; continue; }
+    if(!POLICY.includes(r.code) || !NENDOS.includes(r.年度)){ outside++; continue; }
+    const k = r.code + "|" + r.年度;
+    cell.set(k, (cell.get(k) || 0) + 1);
+    row.set(r.code, (row.get(r.code) || 0) + 1);
+    col.set(r.年度, (col.get(r.年度) || 0) + 1);
+    total++;
+  }
+  return {cell, row, col, total, other, outside};
+}
+
+function renderMap(){
+  const M = S.meta, c = mapCounts();
+  const rowSum = [...c.row.values()].reduce((a, b) => a + b, 0);
+  const colSum = [...c.col.values()].reduce((a, b) => a + b, 0);
+  const ok = c.total === EXPECT_POLICY && rowSum === EXPECT_POLICY && colSum === EXPECT_POLICY && c.outside === 0;
+  const chk = $("#mapCheck");
+  chk.className = "check" + (ok ? "" : " bad");
+  chk.textContent = ok
+    ? `検算：01〜19の合計 ${c.total.toLocaleString()}論点（行の合計・列の合計とも ${EXPECT_POLICY.toLocaleString()}論点で一致）`
+    : `検算が合わない：マス合計 ${c.total}／行合計 ${rowSum}／列合計 ${colSum}論点（基準 ${EXPECT_POLICY}論点、地図外 ${c.outside}論点）`;
+  $("#mapLegend").innerHTML = '<span>1マスの論点数：</span><span><span class="sw" style="background:var(--sunk);border:1px solid var(--line)"></span>0</span>' +
+    BINS.map(([a, b, cls]) => `<span><span class="sw ${cls}"></span>${b === Infinity ? a + "以上" : a === b ? a : a + "〜" + b}</span>`).join("");
+  let h = "<thead><tr><th>主分類</th>" + NENDOS.map(n =>
+    `<th scope="col">${n === 2009 ? '<span class="part">2009*</span>' : n}<br><span class="muted">${n >= 2019 ? (n === 2019 ? "R元" : "R" + (n - 2018)) : "H" + (n - 1988)}</span></th>`).join("") +
+    '<th class="tot" scope="col">計</th></tr></thead><tbody>';
+  for(const code of POLICY){
+    h += `<tr><th scope="row">${code} ${esc(M.codes[code])}</th>`;
+    for(const n of NENDOS){
+      const v = c.cell.get(code + "|" + n) || 0;
+      const sel = mapSel && mapSel[0] === code && mapSel[1] === n ? " sel" : "";
+      h += v
+        ? `<td class="${binOf(v)}${sel}"><button type="button" data-cell="${code}|${n}" aria-label="${code} ${esc(M.codes[code])}、${n}年度、${v}論点">${v}</button></td>`
+        : `<td class="z${sel}"><button type="button" data-cell="${code}|${n}" aria-label="${code} ${esc(M.codes[code])}、${n}年度、0論点">·</button></td>`;
+    }
+    h += `<td class="tot">${c.row.get(code) || 0}</td></tr>`;
+  }
+  h += '</tbody><tfoot><tr><th scope="row">計（論点）</th>' + NENDOS.map(n => `<td class="tot">${c.col.get(n) || 0}</td>`).join("") +
+    `<td class="tot"><b>${c.total.toLocaleString()}</b></td></tr></tfoot>`;
+  $("#heat").innerHTML = h;
+  $("#mapNote").innerHTML = `<span class="part">2009*</span>＝2009年度は一部（2010年1〜3月のみ）。観測窓の端のため、ほかの年度と同じ長さではない。<br>` +
+    `地図に入れていない論点：90 議事運営 ${c.other["90"]}論点、99 判定不能 ${c.other["99"]}論点（全体 ${M.ronten.length.toLocaleString()}論点）。分類はAIによる一次地図（コードブック v2.3.1）で、件数は重要度ではない。`;
+}
+
+function showCell(code, n){
+  mapSel = [code, n];
+  renderMap();
+  const M = S.meta;
+  const list = M.ronten.filter(r => r.code === code && r.年度 === n).sort((a, b) => (a.日付 + a.id).localeCompare(b.日付 + b.id));
+  const saved = S.terms; S.terms = [];
+  const cards = list.map(r => cardRonten(r)).join("");
+  S.terms = saved;
+  $("#cellList").innerHTML = `<h3>${code} ${esc(M.codes[code])} × ${esc(nendoLabel(n))}：${list.length}論点</h3>` +
+    (list.length ? cards : `<div class="empty">この観測窓では、この分類・この年度の論点は見つからなかった。</div>`);
+  $("#cellList").scrollIntoView({block:"start", behavior:"smooth"});
+}
+
+/* ---------- きょうの注目の質疑（完全ランダム） ---------- */
+let pickId = null;
+function pickRandom(){
+  const all = S.meta.ronten;
+  let r;
+  do { r = all[Math.floor(Math.random() * all.length)]; } while(all.length > 1 && r.id === pickId);
+  pickId = r.id;
+  renderPick();
+}
+function nextAnswer(s){
+  if(!s || !s.parent) return null;
+  const sps = S.spByBlock.get(s.parent) || [];
+  const i = sps.indexOf(s);
+  for(let k = i + 1; k < sps.length; k++){
+    const x = sps[k];
+    if(x.kubun === "議員") return null;
+    if(x.kubun !== "議長") return x;
+  }
+  return null;
+}
+function renderPick(){
+  if(!pickId) return;
+  const M = S.meta, r = M.ronten.find(x => x.id === pickId);
+  const b = M.blockById.get(r.block), s = S.spById.get(r.所在), bt = blockTitle(b);
+  const ans = nextAnswer(s);
+  let src = '<p class="muted">発言データを読み込み中。読み込みが終わると原文と答弁が出る。</p>';
+  if(s){
+    const rg = locateRange(s.text, r.本文);
+    src = rg ? `<div class="src">${esc(s.text.slice(0, rg[0]))}<span class="ron">${esc(s.text.slice(rg[0], rg[1]))}</span>${esc(s.text.slice(rg[1]))}</div>`
+             : `<div class="src">${esc(s.text)}</div>`;
+  }
+  $("#pickBody").innerHTML = `<article class="pickcard">
+    <div class="head" style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline">${codeChip(r.code)}<span class="mono">${esc(r.id)}</span><span class="meta">${esc(r.年度)}年度</span></div>
+    <div class="big">${esc(r.本文)}</div>
+    <div class="meta">${esc(r.会期)}・${esc(r.日付)}・質問者 ${esc(r.質問者)}${bt.t ? "・件名「" + esc(bt.t) + "」" : ""}</div>
+    ${trace([["block_id", r.block], ["発言ID", r.所在 || "—"], ["原PDF", (b ? b.file : "") + " " + (s ? pages(s.p, s.pe) : "")]])}
+    <details><summary class="link" style="text-decoration:none">原文（論点本文の箇所に下線）</summary><div style="padding-top:8px">${src}</div></details>
+    ${ans ? `<details><summary class="link" style="text-decoration:none">直後の答弁：${esc(ans.name)}（${esc(ans.role)}）${esc(pages(ans.p, ans.pe))}</summary>
+      <div class="note">発言DBの並びで、この発言のあとに最初に来る答弁側の発言。対応関係の判定ではない。</div>
+      <div class="src">${esc(ans.text)}</div>${trace([["発言ID", ans.id], ["原PDF", ans.file + " " + pages(ans.p, ans.pe)]])}</details>` : ""}
+    <div class="pickactions">${lnk("ronten", r.id, "論点の詳細を開く")}${lnk("block", r.block, "このブロックを開く")}</div>
+  </article>`;
+}
+
+/* ---------- 画面の切り替え ---------- */
+function setView(v){
+  for(const k of ["search","map","pick"]) $("#view-" + k).hidden = k !== v;
+  document.querySelectorAll(".vbtn").forEach(b => b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  if(v === "map") renderMap();
+  if(v === "pick" && !pickId) pickRandom();
+  try{ history.replaceState(null, "", "#" + v); }catch(e){}
+}
+
+/* ---------- 操作 ---------- */
+let timer = null;
+function bind(){
+  document.querySelectorAll(".vbtn").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+  $("#pickAgain").addEventListener("click", pickRandom);
+  const tip = $("#tip");
+  $("#heat").addEventListener("click", e => {
+    const c = e.target.closest("[data-cell]");
+    if(!c) return;
+    const [code, n] = c.dataset.cell.split("|");
+    showCell(code, +n);
+  });
+  $("#heat").addEventListener("mousemove", e => {
+    const c = e.target.closest("[data-cell]");
+    if(!c){ tip.hidden = true; return; }
+    tip.textContent = c.getAttribute("aria-label");
+    tip.hidden = false;
+    tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 270) + "px";
+    tip.style.top = (e.clientY + 14) + "px";
+  });
+  $("#heat").addEventListener("mouseleave", () => { tip.hidden = true; });
+  $("#qform").addEventListener("submit", e => { e.preventDefault(); run(); });
+  $("#q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 350); });
+  for(const id of ["#fNendo","#fCode","#fMember","#fJev","#sort"]) $(id).addEventListener("change", run);
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+    S.tab = t.dataset.tab;
+    document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
+    fillMember();
+    run();
+  }));
+  document.addEventListener("click", e => {
+    const el = e.target.closest("[data-kind][data-id]");
+    if(!el) return;
+    openDetail(el.dataset.kind, el.dataset.id);
+  });
+  $("#pClose").addEventListener("click", closeDetail);
+  $("#pBack").addEventListener("click", () => {
+    S.nav.pop();
+    const last = S.nav[S.nav.length - 1];
+    if(last) openDetail(last[0], last[1], false); else closeDetail();
+  });
+  $("#panel").addEventListener("click", e => { if(e.target === $("#panel")) closeDetail(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("#panel").hidden) closeDetail(); });
+}
+
+init();
+</script>
