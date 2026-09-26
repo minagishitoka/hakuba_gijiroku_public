@@ -26,7 +26,8 @@ page.on("pageerror", e => problems.push(`ページのエラー ${e.message}`));
 page.on("console", m => { if (m.type() === "error") problems.push(`console.error ${m.text()}`); });
 
 await page.goto(url, { waitUntil: "load" });
-await page.waitForFunction(() => document.querySelector("#loading")?.hidden === true, null, { timeout: 120000 });
+// ページのスクリプトが全データを読み終えるまで待つ（#loading は最初から hidden なので目印にしない）
+await page.waitForFunction(() => typeof S !== "undefined" && S.allLoaded === true, null, { timeout: 120000 });
 
 const results = {};
 await page.fill("#q", "空き家");
@@ -57,7 +58,11 @@ console.log("読み込んだデータファイル:", loaded.length, "件");
 console.log(JSON.stringify(results, null, 2));
 const n = s => Number((s.match(/[\d,]+/) || ["0"])[0].replace(/,/g, ""));
 if (loaded.length !== 18) problems.push(`データファイルが18件そろっていない（${loaded.length}件）`);
-for (const t of ["ronten", "block", "speech"]) if (!(n(results[t]) > 0)) problems.push(`「空き家」の${t}が0件`);
+const total = { ronten: 1190, block: 473, speech: 40573 };
+for (const t of ["ronten", "block", "speech"]) {
+  const v = n(results[t]);
+  if (!(v > 0 && v < total[t])) problems.push(`「空き家」の${t}の件数がおかしい（${results[t]}）`);
+}
 if (!results.mapCheck.includes("一致")) problems.push("地図の検算が一致していない: " + results.mapCheck);
 if (!results.mapCell.includes("19論点")) problems.push("地図 14×2018年度 が19論点でない: " + results.mapCell);
 if (problems.length) { console.error("問題:\n" + problems.join("\n")); process.exit(1); }
